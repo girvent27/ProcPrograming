@@ -37,6 +37,20 @@ typedef struct
 } header;
 
 //=================================Funções========================================
+// funções de escrita e leitura para facilitar a tarefa
+void writeInFile(header *h, FILE *f)
+{
+    fread(&h->RIFF, sizeof(riff), 1, f);
+    fread(&h->TMF, sizeof(tmf), 1, f);
+    fread(&h->Dados, sizeof(data), 1, f);
+}
+void readHeader(header *h, FILE *f)
+{
+    fwrite(&h->RIFF, sizeof(riff), 1, f);
+    fwrite(&h->TMF, sizeof(tmf), 1, f);
+    fwrite(&h->Dados, sizeof(data), 1, f);
+}
+
 // Tarefa 1: escrever um programa C que imprima os valores dos dados associados ao
 // cabeçalho de um determinado arquivo WAV.
 void printHeader(FILE *file)
@@ -76,29 +90,16 @@ void printHeader(FILE *file)
 // Tarefa 2: escrever um programa C que copie um arquivo WAV em outro arquivo
 // definindo um struct com os mesmos campos, tamanhos e ordem do cabeçalho de um
 // arquivo .WAV, e usando a função de leitura fread.
-void copyFile(FILE *file, FILE *copy)
+void copyFile(header *SAMPLE, FILE *file, FILE *copy)
 {
-    header SAMPLE;
     int ch;
-
-    // fread(&SAMPLE.RIFF, sizeof(riff), 1, file);
-    // fread(&SAMPLE.Dados, sizeof(data), 1, file);
-    // fread(&SAMPLE.TMF, sizeof(tmf), 1, file);
-
-    printHeader(file);
-
-    // fwrite(&SAMPLE.RIFF, sizeof(riff), 1, copy);
-    // fwrite(&SAMPLE.Dados, sizeof(data), 1, copy);
-    // fwrite(&SAMPLE.TMF, sizeof(tmf), 1, copy);
-
-    fread(&SAMPLE, sizeof(header), 1, file);
-    fwrite(&SAMPLE, sizeof(header), 1, copy);
+    readHeader(&SAMPLE, file);
+    writeInFile(&SAMPLE, copy);
 
     while ((ch = fgetc(file)) != EOF)
     {
         fputc(ch, copy);
     }
-    printHeader(copy);
 }
 
 // Tarefa 3: escrever um programa C que obtenha e escreva o maior e o menor valor do
@@ -134,13 +135,11 @@ void largest(FILE *file)
 
 // Tarefa 4: escrever um programa C que, dado um arquivo wav, gere um outro arquivo wav
 // contendo as amostras invertidas do arquivo dado
-void invert(FILE *file, FILE *inv)
+void invert(header *SAMPLE, FILE *file, FILE *inv)
 {
-    header SAMPLE;
-    fread(&SAMPLE, sizeof(header), 1, file);
-    uint32_t n_samples = SAMPLE.Dados.SubChunk2Size / (SAMPLE.TMF.Bits_per_sample / 8);
+    uint32_t n_samples = SAMPLE->Dados.SubChunk2Size / (SAMPLE->TMF.Bits_per_sample / 8);
     // printf("aqui: %d", N_Samples);
-    int16_t *samples = malloc(SAMPLE.Dados.SubChunk2Size);
+    int16_t *samples = malloc(SAMPLE->Dados.SubChunk2Size);
     if (samples == NULL)
     {
         printf("Erro de memoria");
@@ -154,15 +153,17 @@ void invert(FILE *file, FILE *inv)
         samples[i] = samples[n_samples - 1 - i];
         samples[n_samples - 1 - i] = temp;
     }
-    fread(&SAMPLE, sizeof(header), 1, inv);
+    writeInFile(SAMPLE, inv);
     fwrite(samples, sizeof(int16_t), n_samples, inv);
 
     free(samples);
     printf("Audio invertido com sucesso!!\n");
+    printHeader(inv);
 }
 //=================================Main()==============================================
 int main()
 {
+    header SAMPLE;
     FILE *fil, *cpy, *inv;
     int menu;
 
@@ -184,7 +185,8 @@ int main()
             printf("Falha ao abrir/criar arquivo de cópia.");
         }
     }
-
+    // faz a leitura do header do arquivo original uma unica vez
+    readHeader(&SAMPLE, fil);
     do
     {
         printf("===============Menu==============\n");
@@ -200,13 +202,13 @@ int main()
         printHeader(fil);
         break;
     case 2:
-        copyFile(fil, cpy);
+        copyFile(&SAMPLE, fil, cpy);
         break;
     case 3:
         largest(fil);
         break;
     case 4:
-        invert(fil, inv);
+        invert(&SAMPLE, fil, inv);
         break;
     default:
         break;
