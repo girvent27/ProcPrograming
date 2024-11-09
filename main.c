@@ -134,12 +134,30 @@ void largest(FILE *file)
 
 // Tarefa 4: escrever um programa C que, dado um arquivo wav, gere um outro arquivo wav
 // contendo as amostras invertidas do arquivo dado
-void invert(FILE *f, FILE *i)
+void invert(FILE *file, FILE *inv)
 {
     header SAMPLE;
-    fread(&SAMPLE, sizeof(header), 1, f);
-    uint32_t N_Samples = SAMPLE.Dados.SubChunk2Size / (SAMPLE.TMF.Bits_per_sample / 8);
-    printf("aqui: %d", N_Samples);
+    fread(&SAMPLE, sizeof(header), 1, file);
+    uint32_t n_samples = SAMPLE.Dados.SubChunk2Size / (SAMPLE.TMF.Bits_per_sample / 8);
+    // printf("aqui: %d", N_Samples);
+    int16_t *samples = malloc(SAMPLE.Dados.SubChunk2Size);
+    if (samples == NULL)
+    {
+        printf("Erro de memoria");
+        exit(1);
+    }
+    fread(samples, sizeof(int16_t), n_samples, file);
+
+    for (int32_t i = 0; i < (n_samples / 2); i++)
+    {
+        int16_t temp = samples[i];
+        samples[i] = samples[n_samples - 1 - i];
+        samples[n_samples - 1 - i] = temp;
+    }
+    fread(&SAMPLE, sizeof(header), 1, inv);
+    SAMPLE.Dados.SubChunk2Size = SAMPLE.Dados.SubChunk2Size;
+
+    free(samples);
 }
 //=================================Main()==============================================
 int main()
