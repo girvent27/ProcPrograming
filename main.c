@@ -138,23 +138,23 @@ void largest(FILE *file)
 void invert(header *SAMPLE, FILE *file, FILE *inv)
 {
     uint32_t n_samples = SAMPLE->Dados.SubChunk2Size / (SAMPLE->TMF.Bits_per_sample / 8);
-    // printf("aqui: %d", N_Samples);
-    int16_t *samples = malloc(SAMPLE->Dados.SubChunk2Size);
+    printf("aqui: %d", n_samples);
+    uint16_t *samples = malloc(SAMPLE->Dados.SubChunk2Size);
     if (samples == NULL)
     {
         printf("Erro de memoria");
         exit(1);
     }
-    fread(samples, sizeof(int16_t), n_samples, file);
+    fread(samples, sizeof(uint16_t), n_samples, file);
 
-    for (int32_t i = 0; i < (n_samples / 2); i++)
+    for (uint32_t i = 0; i < (n_samples / 2); i++)
     {
-        int16_t temp = samples[i];
+        uint16_t temp = samples[i];
         samples[i] = samples[n_samples - 1 - i];
         samples[n_samples - 1 - i] = temp;
     }
     writeInFile(SAMPLE, inv);
-    fwrite(samples, sizeof(int16_t), n_samples, inv);
+    fwrite(samples, sizeof(uint16_t), n_samples, inv);
 
     free(samples);
     printf("Audio invertido com sucesso!!\n");
