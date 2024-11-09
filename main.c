@@ -155,9 +155,10 @@ void invert(FILE *file, FILE *inv)
         samples[n_samples - 1 - i] = temp;
     }
     fread(&SAMPLE, sizeof(header), 1, inv);
-    SAMPLE.Dados.SubChunk2Size = SAMPLE.Dados.SubChunk2Size;
+    fwrite(samples, sizeof(int16_t), n_samples, inv);
 
     free(samples);
+    printf("Audio invertido com sucesso!!\n");
 }
 //=================================Main()==============================================
 int main()
