@@ -12,18 +12,19 @@ typedef struct
 typedef struct
 {
     char SubChunk1ID[4];
-    unsigned int SubChunk1Size;
-    unsigned int Audio_format;
-    unsigned int N_of_channels;
-    unsigned int Sample_rate;
-    unsigned int Byte_rate;
-    unsigned int Block_align;
-    unsigned int Bits_per_sample;
+    uint32_t SubChunk1Size;
+    uint16_t Audio_format;
+    uint16_t N_of_channels;
+    uint32_t Sample_rate;
+    uint32_t Byte_rate;
+    uint16_t Block_align;
+    uint16_t Bits_per_sample;
 } tmf;
 typedef struct
 {
     char SubChunk2ID[4];
-    unsigned int SubChunk2Size;
+    uint32_t SubChunk2Size;
+
     unsigned int Audio_data;
 } data;
 
@@ -49,31 +50,27 @@ void printHeader(FILE *file)
         exit(1);
     }
     printf("Cabecalho do arquivo .WAV: \n\n");
-    printf(" _______________________________\n");
-    printf("|  RIFF\t\t|   Value\t|\n");
-    printf("+---------------+---------------+\n");
-    printf("|Chunck ID\t| %.4s\t\t|\n", WAV.RIFF.ChunkID);
-    printf("|Chunck Size\t| %u\t|\n", WAV.RIFF.ChunkSize);
-    printf("|Format\t\t| %.4s\t\t|\n\n", WAV.RIFF.Format);
-
-    printf(" ___________________________________ \n");
-    printf("|    TMF             |   Value      |\n");
-    printf("+--------------------+--------------+\n");
-    printf("|SubChunk1 ID        |  %.4s\t    |\n", WAV.TMF.SubChunk1ID);
-    printf("|SubChunk1 Size      |  %u\t    |\n", WAV.TMF.SubChunk1Size);
-    printf("|Audioformat         |  %u\t    |\n", WAV.TMF.Audio_format);
-    printf("|Numero de channels  |  %u\t    |\n", WAV.TMF.N_of_channels);
-    printf("|Sample rate         |  %u\t    |\n", WAV.TMF.Sample_rate);
-    printf("|Byte rate           |  %u\t    |\n", WAV.TMF.Byte_rate);
-    printf("|Block align         |  %u  |\n", WAV.TMF.Block_align);
-    printf("|Bits per sample     |  %u\t    |\n\n", WAV.TMF.Bits_per_sample);
-
-    printf(" _______________________________ \n");
-    printf("|    DATA       |   Value       |\n");
-    printf("+---------------+---------------+\n");
-    printf("|SubChunk2 ID\t|  %.4s\t\t|\n", WAV.Dados.SubChunk2ID);
-    printf("|SubChunk2 Size\t|  %u\t|\n", WAV.Dados.SubChunk2Size);
-    printf("|Audio data\t|  %u\t\t|\n\nEnd of Header\n\n", WAV.Dados.Audio_data);
+    printf(" __________________________________\n");
+    printf("|  ID                 |   Value    |\n");
+    printf("+---------------------+------------+\n");
+    printf("| Chunck ID           | %.4s\t   |\n", WAV.RIFF.ChunkID);
+    printf("| Chunck Size         | %d   |\n", WAV.RIFF.ChunkSize);
+    printf("| Format\              | %.4s\t   |\n", WAV.RIFF.Format);
+    printf("+---------------------+------------+\n");
+    printf("| SubChunk1 ID        | %.4s\t   |\n", WAV.TMF.SubChunk1ID);
+    printf("| SubChunk1 Size      | %d\t   |\n", WAV.TMF.SubChunk1Size);
+    printf("| Audioformat         | %d\t   |\n", WAV.TMF.Audio_format);
+    printf("| Numero de channels  | %d\t   |\n", WAV.TMF.N_of_channels);
+    printf("| Sample rate         | %d\t   |\n", WAV.TMF.Sample_rate);
+    printf("| Byte rate           | %d\t   |\n", WAV.TMF.Byte_rate);
+    printf("| Block align         | %d\t   |\n", WAV.TMF.Block_align);
+    printf("| Bits per sample     | %d\t   |\n", WAV.TMF.Bits_per_sample);
+    printf("+---------------------+------------+\n");
+    printf("| SubChunk2 ID        | %.4s\t   |\n", WAV.Dados.SubChunk2ID);
+    printf("| SubChunk2 Size      | %d\t   |\n", WAV.Dados.SubChunk2Size);
+    printf("| Audio data          | %u |\n", WAV.Dados.Audio_data);
+    printf("====================================\n\n");
+    printf("End of Header\n\n");
 }
 
 // Tarefa 2: escrever um programa C que copie um arquivo WAV em outro arquivo
@@ -139,6 +136,10 @@ void largest(FILE *file)
 // contendo as amostras invertidas do arquivo dado
 void invert(FILE *f, FILE *i)
 {
+    header SAMPLE;
+    fread(&SAMPLE, sizeof(header), 1, f);
+    uint32_t N_Samples = SAMPLE.Dados.SubChunk2Size / (SAMPLE.TMF.Bits_per_sample / 8);
+    printf("aqui: %d", N_Samples);
 }
 //=================================Main()==============================================
 int main()
@@ -146,7 +147,7 @@ int main()
     FILE *fil, *cpy, *inv;
     int menu;
 
-    if ((fil = fopen("source/sample.wav", "rb")) == NULL)
+    if ((fil = fopen("source/audio.wav", "rb")) == NULL)
     {
         printf("Arquivo 'audio.wav' nao foi aberto");
         exit(1);
