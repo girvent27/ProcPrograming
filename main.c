@@ -100,6 +100,8 @@ void copyFile(header *SAMPLE, FILE *file, FILE *copy)
     {
         fputc(ch, copy);
     }
+    // printHeader(copy);
+    printf("Arquivo Copiado Com Sucesso!!");
 }
 
 // Tarefa 3: escrever um programa C que obtenha e escreva o maior e o menor valor do
@@ -137,6 +139,7 @@ void largest(FILE *file)
 // contendo as amostras invertidas do arquivo dado
 void invert(header *SAMPLE, FILE *file, FILE *inv)
 {
+    printf("Aqui");
     uint32_t n_samples = SAMPLE->Dados.SubChunk2Size / (SAMPLE->TMF.Bits_per_sample / 8);
     printf("aqui: %d", n_samples);
     uint16_t *samples = malloc(SAMPLE->Dados.SubChunk2Size);
