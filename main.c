@@ -100,7 +100,7 @@ void copyFile(header *SAMPLE, FILE *file, FILE *copy)
         fputc(ch, copy);
     }
     // printHeader(copy);
-    printf("Arquivo Copiado Com Sucesso!!");
+    printf("Arquivo Copiado Com Sucesso!!\n\n");
 }
 
 // Tarefa 3: escrever um programa C que obtenha e escreva o maior e o menor valor do
@@ -171,7 +171,8 @@ int main()
     FILE *fil, *cpy, *inv;
     int menu;
 
-    if ((fil = fopen("source/sample.wav", "rb")) == NULL)
+    printf("---------------------------------\n");
+    if ((fil = fopen("source/audio2.wav", "rb")) == NULL)
     {
         printf("Arquivo 'audio.wav' nao foi aberto");
         exit(1);
