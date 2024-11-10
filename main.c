@@ -19,12 +19,11 @@ typedef struct
     uint32_t Byte_rate;
     uint16_t Block_align;
     uint16_t Bits_per_sample;
-} tmf;
+} fmt;
 typedef struct
 {
     char SubChunk2ID[4];
     uint32_t SubChunk2Size;
-
     unsigned int Audio_data;
 } data;
 
@@ -32,7 +31,7 @@ typedef struct
 {
     // int etiq;
     riff RIFF;
-    tmf TMF;
+    fmt FMT;
     data Dados;
 } header;
 
@@ -41,13 +40,13 @@ typedef struct
 void writeInFile(header *h, FILE *f)
 {
     fread(&h->RIFF, sizeof(riff), 1, f);
-    fread(&h->TMF, sizeof(tmf), 1, f);
+    fread(&h->FMT, sizeof(fmt), 1, f);
     fread(&h->Dados, sizeof(data), 1, f);
 }
 void readHeader(header *h, FILE *f)
 {
     fwrite(&h->RIFF, sizeof(riff), 1, f);
-    fwrite(&h->TMF, sizeof(tmf), 1, f);
+    fwrite(&h->FMT, sizeof(fmt), 1, f);
     fwrite(&h->Dados, sizeof(data), 1, f);
 }
 
@@ -69,16 +68,16 @@ void printHeader(FILE *file)
     printf("+---------------------+------------+\n");
     printf("| Chunck ID           | %.4s\t   |\n", WAV.RIFF.ChunkID);
     printf("| Chunck Size         | %d   |\n", WAV.RIFF.ChunkSize);
-    printf("| Format\              | %.4s\t   |\n", WAV.RIFF.Format);
+    printf("| Format               | %.4s\t   |\n", WAV.RIFF.Format);
     printf("+---------------------+------------+\n");
-    printf("| SubChunk1 ID        | %.4s\t   |\n", WAV.TMF.SubChunk1ID);
-    printf("| SubChunk1 Size      | %d\t   |\n", WAV.TMF.SubChunk1Size);
-    printf("| Audioformat         | %d\t   |\n", WAV.TMF.Audio_format);
-    printf("| Numero de channels  | %d\t   |\n", WAV.TMF.N_of_channels);
-    printf("| Sample rate         | %d\t   |\n", WAV.TMF.Sample_rate);
-    printf("| Byte rate           | %d\t   |\n", WAV.TMF.Byte_rate);
-    printf("| Block align         | %d\t   |\n", WAV.TMF.Block_align);
-    printf("| Bits per sample     | %d\t   |\n", WAV.TMF.Bits_per_sample);
+    printf("| SubChunk1 ID        | %.4s\t   |\n", WAV.FMT.SubChunk1ID);
+    printf("| SubChunk1 Size      | %d\t   |\n", WAV.FMT.SubChunk1Size);
+    printf("| Audioformat         | %d\t   |\n", WAV.FMT.Audio_format);
+    printf("| Numero de channels  | %d\t   |\n", WAV.FMT.N_of_channels);
+    printf("| Sample rate         | %d\t   |\n", WAV.FMT.Sample_rate);
+    printf("| Byte rate           | %d\t   |\n", WAV.FMT.Byte_rate);
+    printf("| Block align         | %d\t   |\n", WAV.FMT.Block_align);
+    printf("| Bits per sample     | %d\t   |\n", WAV.FMT.Bits_per_sample);
     printf("+---------------------+------------+\n");
     printf("| SubChunk2 ID        | %.4s\t   |\n", WAV.Dados.SubChunk2ID);
     printf("| SubChunk2 Size      | %d\t   |\n", WAV.Dados.SubChunk2Size);
@@ -93,8 +92,8 @@ void printHeader(FILE *file)
 void copyFile(header *SAMPLE, FILE *file, FILE *copy)
 {
     int ch;
-    readHeader(&SAMPLE, file);
-    writeInFile(&SAMPLE, copy);
+    readHeader(SAMPLE, file);
+    writeInFile(SAMPLE, copy);
 
     while ((ch = fgetc(file)) != EOF)
     {
@@ -139,10 +138,11 @@ void largest(FILE *file)
 // contendo as amostras invertidas do arquivo dado
 void invert(header *SAMPLE, FILE *file, FILE *inv)
 {
-    // uint32_t n_samples = SAMPLE->Dados.SubChunk2Size / (SAMPLE->TMF.Bits_per_sample / 8);
+    printf("%d\n", SAMPLE->FMT.Bits_per_sample);
+    uint32_t i, n_samples = SAMPLE->Dados.SubChunk2Size / (SAMPLE->FMT.Bits_per_sample / 8);
     printHeader(file);
-    uint16_t n_samples = SAMPLE->TMF.Bits_per_sample;
-    printf("bits per sample: %d\n", n_samples);
+    // uint16_t n_samples = SAMPLE->FMT.Bits_per_sample;
+    printf("bits per sample: %d\n", SAMPLE->Dados.SubChunk2Size);
     uint16_t *samples = malloc(SAMPLE->Dados.SubChunk2Size);
     if (samples == NULL)
     {
@@ -151,7 +151,7 @@ void invert(header *SAMPLE, FILE *file, FILE *inv)
     }
     fread(samples, sizeof(uint16_t), n_samples, file);
 
-    for (uint32_t i = 0; i < (n_samples / 2); i++)
+    for (i = 0; i < (n_samples / 2); i++)
     {
         uint16_t temp = samples[i];
         samples[i] = samples[n_samples - 1 - i];
@@ -171,7 +171,7 @@ int main()
     FILE *fil, *cpy, *inv;
     int menu;
 
-    if ((fil = fopen("source/audio.wav", "rb")) == NULL)
+    if ((fil = fopen("source/sample.wav", "rb")) == NULL)
     {
         printf("Arquivo 'audio.wav' nao foi aberto");
         exit(1);
