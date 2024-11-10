@@ -138,31 +138,62 @@ void largest(FILE *file)
 // contendo as amostras invertidas do arquivo dado
 void invert(header *SAMPLE, FILE *file, FILE *inv)
 {
-    printf("%d\n", SAMPLE->FMT.Bits_per_sample);
-    uint32_t i, n_samples = SAMPLE->Dados.SubChunk2Size / (SAMPLE->FMT.Bits_per_sample / 8);
-    printHeader(file);
-    // uint16_t n_samples = SAMPLE->FMT.Bits_per_sample;
-    printf("bits per sample: %d\n", SAMPLE->Dados.SubChunk2Size);
+    // printf("%d\n", SAMPLE->FMT.Bits_per_sample);
+    // uint32_t i, n_samples = SAMPLE->Dados.SubChunk2Size / (SAMPLE->FMT.Bits_per_sample / 8);
+    // printHeader(file);
+    // // uint16_t n_samples = SAMPLE->FMT.Bits_per_sample;
+    // printf("bits per sample: %d\n", SAMPLE->Dados.SubChunk2Size);
+    // uint16_t *samples = malloc(SAMPLE->Dados.SubChunk2Size);
+    // if (samples == NULL)
+    // {
+    //     printf("Erro de memoria");
+    //     exit(1);
+    // }
+    // fread(samples, sizeof(uint16_t), n_samples, file);
+
+    // for (i = 0; i < (n_samples / 2); i++)
+    // {
+    //     uint16_t temp = samples[i];
+    //     samples[i] = samples[n_samples - 1 - i];
+    //     samples[n_samples - 1 - i] = temp;
+    // }
+    // writeInFile(SAMPLE, inv);
+    // fwrite(samples, sizeof(uint16_t), n_samples, inv);
+
+    // free(samples);
+    // printf("Audio invertido com sucesso!!\n");
+    // printHeader(inv);
+
+    // Calcular o n�mero de amostras
+    uint32_t numSamples = SAMPLE->Dados.SubChunk2Size / (SAMPLE->FMT.Bits_per_sample / 8);
+
+    // Alocar mem�ria para armazenamento e leitura dos dados das amostras
     uint16_t *samples = malloc(SAMPLE->Dados.SubChunk2Size);
     if (samples == NULL)
     {
-        printf("Erro de memoria");
-        exit(1);
+        printf("Erro ao alocar memoria para as amostras.\n");
+        return;
     }
-    fread(samples, sizeof(uint16_t), n_samples, file);
 
-    for (i = 0; i < (n_samples / 2); i++)
+    // Ler as amostras do arquivo original
+    fread(samples, sizeof(uint16_t), numSamples, file);
+
+    // Inverter amostras
+    for (uint32_t i = 0; i < (numSamples / 2); i++)
     {
         uint16_t temp = samples[i];
-        samples[i] = samples[n_samples - 1 - i];
-        samples[n_samples - 1 - i] = temp;
+        samples[i] = samples[numSamples - 1 - i];
+        samples[numSamples - 1 - i] = temp;
     }
-    writeInFile(SAMPLE, inv);
-    fwrite(samples, sizeof(uint16_t), n_samples, inv);
 
+    // Escrever o cabe�alho no arquivo invertido
+
+    writeInFile(SAMPLE, inv);
+
+    // Atualizar o tamanho dos dados no cabe�alho
+    fwrite(samples, sizeof(uint16_t), numSamples, inv);
     free(samples);
-    printf("Audio invertido com sucesso!!\n");
-    printHeader(inv);
+    // printf("Audio invertido com sucesso!!\n");
 }
 //=================================Main()==============================================
 int main()
