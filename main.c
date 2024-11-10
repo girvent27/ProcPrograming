@@ -139,9 +139,10 @@ void largest(FILE *file)
 // contendo as amostras invertidas do arquivo dado
 void invert(header *SAMPLE, FILE *file, FILE *inv)
 {
-    printf("Aqui");
-    uint32_t n_samples = SAMPLE->Dados.SubChunk2Size / (SAMPLE->TMF.Bits_per_sample / 8);
-    printf("aqui: %d", n_samples);
+    // uint32_t n_samples = SAMPLE->Dados.SubChunk2Size / (SAMPLE->TMF.Bits_per_sample / 8);
+    printHeader(file);
+    uint16_t n_samples = SAMPLE->TMF.Bits_per_sample;
+    printf("bits per sample: %d\n", n_samples);
     uint16_t *samples = malloc(SAMPLE->Dados.SubChunk2Size);
     if (samples == NULL)
     {
@@ -175,19 +176,6 @@ int main()
         printf("Arquivo 'audio.wav' nao foi aberto");
         exit(1);
     }
-    else
-    {
-
-        if ((cpy = fopen("source/copy.wav", "wb")) == NULL)
-        {
-            printf("Falha ao abrir/criar arquivo de cópia.");
-        }
-
-        if ((inv = fopen("source/inverted.wav", "wb")) == NULL)
-        {
-            printf("Falha ao abrir/criar arquivo de cópia.");
-        }
-    }
     // faz a leitura do header do arquivo original uma unica vez
     readHeader(&SAMPLE, fil);
     do
@@ -205,12 +193,22 @@ int main()
         printHeader(fil);
         break;
     case 2:
+        if ((cpy = fopen("source/copy.wav", "wb")) == NULL)
+        {
+            printf("Falha ao abrir/criar arquivo de cópia.");
+            exit(1);
+        }
         copyFile(&SAMPLE, fil, cpy);
         break;
     case 3:
         largest(fil);
         break;
     case 4:
+        if ((inv = fopen("source/inverted.wav", "wb")) == NULL)
+        {
+            printf("Falha ao abrir/criar arquivo de inversão.");
+            exit(1);
+        }
         invert(&SAMPLE, fil, inv);
         break;
     default:
